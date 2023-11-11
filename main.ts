@@ -17,6 +17,16 @@ const JITSUGI_SUBJECT_MAP = new Map([
 	["FP協会", "fp"],
 ]);
 
+interface CardData {
+	type: string;
+	question: string;
+	buttons: string;
+	answer: string;
+	explanation: string;
+	catelog: string;
+	examTime: string;
+}
+
 async function main() {
 	//  remove all files
 	if (fs.existsSync(OUTPUT_FOLDER)) {
@@ -68,15 +78,15 @@ async function crawlCardRecords(url: string, type: string, subject?: string) {
 		let catelog = await getCatelog(page, ".content>a");
 		let examTime = getExamTime(question);
 
-		await outputToFile(
+		await outputToFile({
 			type,
 			question,
 			buttons,
 			answer,
 			explanation,
 			catelog,
-			examTime
-		);
+			examTime,
+		});
 		await setTimeout(1000);
 		await clickSubmit(page);
 	}
@@ -167,22 +177,16 @@ function wrapContent(content: string, className: string): string {
 	return `<div class="${className}">${content}</div>`;
 }
 
-async function outputToFile(
-	type: String,
-	question: string,
-	choice: string,
-	answer: string,
-	explanation: string,
-	catelog: string,
-	examTime: string
-) {
+async function outputToFile(cardData: CardData) {
+	const { type, question, buttons, answer, explanation, catelog, examTime } =
+		cardData;
 	const outputFolder = OUTPUT_FOLDER + type + "/";
 	const outputFileName =
 		outputFolder + OUTPUT_FILE_NAME_PREFIX + type + "." + OUTPUT_FILE_EXT;
 	const content =
 		wrapContent(question, "question") +
 		"\t" +
-		wrapContent(choice, "choice") +
+		wrapContent(buttons, "choice") +
 		"\t" +
 		wrapContent(answer, "answer") +
 		"\t" +
